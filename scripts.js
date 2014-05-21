@@ -23,14 +23,11 @@ function getContentsFromFile(url) {
 // Successfully Get Left Camera
 function successLeft(stream, left, right) {
 	left.stream.src = window.URL.createObjectURL(stream);
-	navigator.getUserMedia({video: true}, function(stream){ successRight(stream, left, right) }, error);
 }
 
 // Successfully Get Right Camera
 function successRight(stream, left, right) {
 	right.stream.src = window.URL.createObjectURL(stream);
-	left.stream.play();
-	right.stream.play();
 }
 
 // Create Shader
@@ -213,7 +210,33 @@ $(function(){
 	
 	// Initialize Camera Streams
 	if (navigator.getUserMedia) {
-		navigator.getUserMedia({video: true}, function(stream){ successLeft(stream, left, right) }, error);
+       
+       
+
+		// Get all video sources
+		MediaStreamTrack.getSources(function(media_sources) {
+
+ 			// Find camera 1
+            var num = media_sources.length
+            id = media_sources[num-1].id;
+			var constraints = {};
+		    constraints.video = {
+				optional: [{ sourceId: id}]
+		    };
+			navigator.getUserMedia(constraints, function(stream){ successRight(stream, left, right) }, error);
+
+ 			// Find camera 2
+            id = media_sources[num-2].id;
+			var constraints = {};
+		    constraints.video = {
+				optional: [{ sourceId: id}]
+		    };
+			navigator.getUserMedia(constraints, function(stream){ successLeft(stream, left, right) }, error);
+
+ 			// Activate cameras
+			left.stream.play();
+			right.stream.play();
+		});
 	}
 	
 	// Initialize Programs
